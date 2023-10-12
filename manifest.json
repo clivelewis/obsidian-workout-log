@@ -1,0 +1,10 @@
+{
+	"id": "workout-log",
+	"name": "Workout Log Plugin",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "Plugin to log your workouts",
+	"author": "clive00lewis",
+	"authorUrl": "https://clivelewis.github.io/",
+	"isDesktopOnly": false
+}
