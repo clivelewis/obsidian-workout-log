@@ -13,11 +13,14 @@ export class WorkoutView extends ItemView {
         super(leaf);
     }
 
-    async onOpen() {
+    public async onOpen() {
 
         const container = this.containerEl.children[1];
+
+        // Let the users select/copy text.
         this.containerEl.style.userSelect = "text";
 
+        // Update the view when the file is modified.
         this.registerEvent(this.app.vault.on('modify', (file) => {
             const activeFile = this.app.workspace.getActiveFile();
             if (activeFile && file.path === activeFile.path) {
@@ -25,8 +28,9 @@ export class WorkoutView extends ItemView {
             }
         }));
 
+        // Update the view when the another file is opened.
         this.registerEvent(
-            this.app.workspace.on('file-open', (file) => {
+            this.app.workspace.on('file-open', () => {
               this.createWorkoutView(container);
             })
           );
@@ -42,7 +46,6 @@ export class WorkoutView extends ItemView {
         if (leaf) {
 
             container.createEl("h1", { text: "Workout Summary" });
-            // add file name as a subtitle
 
             const workouts = await this.readWorkoutsFromFile(leaf);
 
@@ -56,16 +59,21 @@ export class WorkoutView extends ItemView {
             this.displayWorkouts(container, workouts);
         }
     }
+
+    /**
+     * Reads current file, parses all 'workout' code blocks and converts them to {@link Workout} objects.
+     * @param leaf 
+     * @returns array of workouts. If no workouts are found, an empty array is returned.
+     */
     private async readWorkoutsFromFile(leaf: WorkspaceLeaf): Promise<Workout[]> {
 
         const workouts: Workout[] = [];
 
         const filePath = leaf.getViewState().state?.file;
         if (filePath && typeof filePath === 'string') {
-            // read file
+
             const file = this.app.vault.getAbstractFileByPath(filePath);
             if (file instanceof TFile) {
-                // get file contents
                 const content = await this.app.vault.cachedRead(file);
 
                 // get all code blocks with the language "workout" using regex
@@ -81,6 +89,11 @@ export class WorkoutView extends ItemView {
         return workouts;
     }
 
+    /**
+     * Creates the subheader with the total number of workouts and the sorting dropdown.
+     * @param container View container
+     * @param workouts array of workouts
+     */
     private addSubheader(container: Element, workouts: Workout[]): void {
 
         const subHeaderContainer = container.createDiv("sub-header-container");
@@ -108,12 +121,13 @@ export class WorkoutView extends ItemView {
         };
 
         select.addEventListener("change", function () {
-            console.log("onChange");
-            const selectedOption = select.value;
 
-            switch (selectedOption) {
-                case ViewSortingOptions.Occurrence:
-                    setCurrentSort(ViewSortingOptions.Occurrence);
+            switch (select.value) {
+                case ViewSortingOptions.Oldest:
+                    setCurrentSort(ViewSortingOptions.Oldest);
+                    break;
+                case ViewSortingOptions.Newest:
+                    setCurrentSort(ViewSortingOptions.Newest);
                     break;
                 case ViewSortingOptions.Date:
                     setCurrentSort(ViewSortingOptions.Date);
@@ -123,9 +137,10 @@ export class WorkoutView extends ItemView {
             }
         });
     }
-
+    
     private displayWorkouts(container: Element, workouts: Workout[]): void {
 
+        // Don't modify the original array
         workouts = [...workouts];
 
         // find div with class workout-container
@@ -147,13 +162,16 @@ export class WorkoutView extends ItemView {
                 return moment(a.date, WorkoutSettings.getDateFormat())
                     .isBefore(moment(b.date, WorkoutSettings.getDateFormat())) ? 1 : -1;
             });
-        } else if (WorkoutSettings.getViewSortingOption() === ViewSortingOptions.Occurrence) {
-            // Do nothing and let the workouts be displayed in the order they were added
+
+        } else if (WorkoutSettings.getViewSortingOption() === ViewSortingOptions.Oldest) {
+            // Do nothing and let the workouts be displayed in the order they were added to the file.
+        } else if (WorkoutSettings.getViewSortingOption() === ViewSortingOptions.Newest) {
+            workouts.reverse();
         }
 
         for (const workout of workouts) {
             const workoutBox = workoutContainer.createDiv("workout");
-            // add padding 5px to workout box
+
             workoutBox.style.paddingLeft = "10px";
             workoutBox.style.paddingTop = "5px";
             workoutBox.style.paddingBottom = "5px";
@@ -166,7 +184,7 @@ export class WorkoutView extends ItemView {
                 workoutBox.style.backgroundColor = "var(--background-secondary)";
             };
 
-            const date = "📅 " + (workout.date ? workout.date : "No date");
+            const date = "📅 " + (workout.date ? workout.date.format(WorkoutSettings.getDateFormat()) : "No date");
 
             workoutBox.createEl("h4", { text: date });
 
@@ -200,9 +218,9 @@ export class WorkoutView extends ItemView {
             summary += `${exercise.weight} ${exercise.weightUnit} - `;
         }
 
-        summary += exercise.reps.length;
-        summary += exercise.reps.length > 1 ? " sets" : " set";
-        summary += ` of ${exercise.reps.join(", ")} reps`
+        summary += exercise.sets.length;
+        summary += exercise.sets.length > 1 ? " sets" : " set";
+        summary += ` of ${exercise.sets.join(", ")} reps`
         return summary;
     }
 

@@ -28,8 +28,8 @@ Follow these steps:
 
 ## Feature checklist
 
-- [x] Custom code block
-- [x] Workout summary view
+- [x] ~Custom code block~
+- [x] ~Workout summary view~
 - [ ] Show total amount of reps and weight per exercise
 - [ ] Ability to add comments for sets
 - [ ] Configurable pattern for code block

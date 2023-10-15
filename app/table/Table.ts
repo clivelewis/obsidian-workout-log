@@ -1,6 +1,10 @@
 
+/**
+ * Simple class that represents HTML table structure.
+ */
 export class Table {
-	private _rows: Array<TableRow> = [];
+
+	private _rows: TableRow[] = [];
 
 	public addRow(): TableRow {
 
@@ -9,6 +13,10 @@ export class Table {
 		return tableRow;
 	}
 
+	/**
+	 * Converts the table to an HTML table element.
+	 * @returns The HTML table element.
+	 */
 	public toHtmlTable(): HTMLTableElement {
 
 		const table: HTMLTableElement = document.createElement("table");
@@ -24,6 +32,7 @@ export class Table {
 			for (const column of row.columns) {
 				const tableCell = i === 0 ? tableRow.createEl("th") : tableRow.createEl("td");
 				tableCell.innerHTML = column.text;
+				if (i == 0) tableCell.style.fontSize = "large";
 			}
 		}
 
@@ -31,6 +40,7 @@ export class Table {
 	}
 
 }
+
 
 export class TableRow {
 	private _columns: Array<TableColumn> = [];

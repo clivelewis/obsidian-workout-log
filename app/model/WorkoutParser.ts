@@ -15,7 +15,11 @@ export default class WorkoutParser {
 		workout.totalEnabled = WorkoutSettings.getTotalEnabled();
 
 		if (this.isDateLine(firstLine)) {
-			const date = moment(firstLine, WorkoutSettings.getDateFormat()).format(WorkoutSettings.getDateFormat());
+			const date = moment(firstLine, WorkoutSettings.getDateFormat(), true);
+			if (!date.isValid()) {
+				// Do something
+			}
+			console.log(date);
 			workout.date = date;
 			lines.shift();
 		}
@@ -37,7 +41,7 @@ export default class WorkoutParser {
 					exercise.weight = parseInt(entries[i].replace("level", "").replace("lvl", ""));
 					exercise.weightUnit = "level";
 				} else {
-					exercise.reps.push(parseInt(entries[i]));
+					exercise.sets.push(parseInt(entries[i]));
 				}
 			}
 
@@ -48,6 +52,7 @@ export default class WorkoutParser {
     }
 
     private static isDateLine(line: string): boolean {
+
 		return !line.contains(",");
 	}
 }
